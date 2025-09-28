@@ -5,3 +5,6 @@ Este proyecto implementa un sistema de control automático de nivel de agua en u
 El repositorio contiene la información necesaria para implementar el sistema: código principal, código para calibrar el sensor, archivos de impresión de soportes para los tanques e imágenes del sistema final.
 
 Las futuras mejoras al repositorio serán añadidas con el tiempo.
+
+Video del proyecto: https://www.youtube.com/watch?v=3n2AFlVpxDg
+
