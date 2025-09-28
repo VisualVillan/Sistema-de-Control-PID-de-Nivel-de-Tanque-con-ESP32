@@ -1,4 +1,4 @@
-// --------- Pines (ESP32 + TB6612FNG) ---------
+// ESP32 + TB6612FNG
 const int PWMA = 23;   
 const int AIN1 = 25;   
 const int AIN2 = 26;   
@@ -14,10 +14,10 @@ double setpoint = 150;
 float distancia;
 float altura;
 
-// --- Parámetros del filtro robusto ---
+// Parámetros del filtro robusto
 const int   N_SAMPLES   = 40;     // ráfaga por ciclo
 const int   TIMEOUT_US  = 30000;  // 30 ms
-const float MIN_CM      = 1.5;    // rango válido (ajusta a tu tanque)
+const float MIN_CM      = 1.5;    // rango válido
 const float MAX_CM      = 200.0;
 const float MAD_K       = 2.5;    // umbral de outliers
 const float TRIM_FRAC   = 0.10;   // 10% media recortada
@@ -102,12 +102,11 @@ void loop()
     output = pid(error);
   }
   output = constrain(output, 150, 255);
-  if (output > 0 && output < 120) { // 120 es tu PWM mínimo
+  if (output > 0 && output < 120) { // 
     output = 120;
   }
   analogWrite(PWMA, (int)output);
 
-  // ----- Salida para Serial Plotter -----
   // Formato: setpoint altura Ymin Ymax
   Serial.print(setpoint); Serial.print(" ");
   Serial.print(volumen);   Serial.print(" ");
@@ -121,11 +120,8 @@ double pid(double error)
   static double i = 0.0;    // estado integral
   static double prev = 0.0; // error previo para derivada
 
-  // Derivada robusta ante dt pequeño
   double DT = (dt > 1e-3) ? dt : 1e-3;
   double d  = (error - prev) / DT;
-
-  // Salida "ideal" antes de saturar (para back-calculation)
   double u_pre = kp*error + ki*i + kd*d;
 
   // Saturaciones reales del actuador
@@ -147,7 +143,7 @@ double pid(double error)
     i += error*DT;
   }
 
-  // Límite a la contribución integral (en unidades de PWM)
+  // Límite a la contribución integral
   const double Imax = 150.0; // tope del aporte integral
   double Ii = ki * i;
   if (ki > 1e-9) {
@@ -177,7 +173,6 @@ float medirDistanciaRobusta(){
 
   // 1) Recolectar N lecturas válidas
   for (int i = 0; i < N_SAMPLES; i++) {
-    // Trigger
     digitalWrite(TRIG, LOW);
     delayMicroseconds(3);
     digitalWrite(TRIG, HIGH);
@@ -189,13 +184,12 @@ float medirDistanciaRobusta(){
       float d = (t * CM_PER_US) / 2.0; // ida y vuelta -> /2
       if (d >= MIN_CM && d <= MAX_CM) vals[k++] = d;
     }
-    delay(5); // pequeña pausa para reducir ecos múltiples
+    delay(5); 
   }
 
-  // Si hay muy pocas válidas, devuelve el último valor estable
   if (k < 5) return distancia_filtrada;
 
-  // 2) Ordenar (inserción; k<=40)
+  // 2) Ordenar
   float sorted[N_SAMPLES];
   for (int i = 0; i < k; i++) sorted[i] = vals[i];
   for (int i = 1; i < k; i++) {
@@ -227,7 +221,7 @@ float medirDistanciaRobusta(){
     float a = vals[i] - med; if (a < 0) a = -a;
     if (a <= thr) kept[m++] = vals[i];
   }
-  if (m < 5) { // si filtraste demasiado, usa todas las ordenadas
+  if (m < 5) {
     for (int i = 0; i < k; i++) kept[i] = sorted[i];
     m = k;
   }
