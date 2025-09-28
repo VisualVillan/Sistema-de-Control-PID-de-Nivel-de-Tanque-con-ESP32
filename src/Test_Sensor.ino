@@ -3,10 +3,9 @@
 const int TRIG = 32;
 const int ECHO = 33;
 
-float distancia;          // distancia calibrada (final)
+float distancia;       
 float altura;
 
-// --- Parámetros del filtro robusto ---
 const int   N_SAMPLES   = 40;     // ráfaga por ciclo
 const int   TIMEOUT_US  = 30000;  // 30 ms
 const float MIN_CM      = 1.5;    // rango válido (ajusta a tu tanque)
@@ -46,10 +45,10 @@ void loop() {
   Serial.print("  Cal(cm)=");    Serial.print(distancia, 2);
   Serial.print("  Altura(cm)="); Serial.println(altura, 2);
 
-  delay(200); // periodo entre ráfagas
+  delay(200); 
 }
 
-// ---------- Función de medición robusta ----------
+// Función de medición robusta 
 float medirDistanciaRobusta() {
   // 0.0343 cm/us ≈ velocidad del sonido a ~20–25°C
   const float CM_PER_US = 0.0343;
@@ -71,7 +70,7 @@ float medirDistanciaRobusta() {
       float d = (t * CM_PER_US) / 2.0; // ida y vuelta -> /2
       if (d >= MIN_CM && d <= MAX_CM) vals[k++] = d;
     }
-    delay(5); // pequeña pausa para reducir ecos múltiples
+    delay(5);
   }
 
   // Si hay muy pocas válidas, devuelve el último valor estable
@@ -100,7 +99,7 @@ float medirDistanciaRobusta() {
     devs[j+1] = key;
   }
   float mad = (k % 2) ? devs[k/2] : 0.5f*(devs[k/2-1] + devs[k/2]);
-  float sigma = (mad > 0) ? 1.4826f * mad : 0.5f; // robust scale
+  float sigma = (mad > 0) ? 1.4826f * mad : 0.5f; 
   float thr = MAD_K * sigma;
 
   // 4) Filtrar outliers |x - med| <= thr
@@ -109,7 +108,7 @@ float medirDistanciaRobusta() {
     float a = vals[i] - med; if (a < 0) a = -a;
     if (a <= thr) kept[m++] = vals[i];
   }
-  if (m < 5) { // si filtraste demasiado, usa todas las ordenadas
+  if (m < 5) { 
     for (int i = 0; i < k; i++) kept[i] = sorted[i];
     m = k;
   }
